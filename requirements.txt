@@ -1,6 +1,5 @@
 #### TWINT requirements
 git+https://github.com/twintproject/twint.git@origin/master#egg=twint
-Python >=3.6
 aiohttp==3.7.0
 aiodns
 beautifulsoup4
