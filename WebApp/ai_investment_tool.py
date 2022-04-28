@@ -1127,9 +1127,6 @@ if st.checkbox("Run Monte Carlo Portfolio Optimization algorithm"):
                 
 # Comments part
 
-conn = db.connect()
-comments = db.collect(conn)
-
 with st.expander("💬 Open comments"):
 
     # Show comments
@@ -1155,8 +1152,9 @@ with st.expander("💬 Open comments"):
     submit = form.form_submit_button("Add comment")
 
     if submit:
-        date = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-        db.insert(conn, [[name, comment, date]])
-        if "just_posted" not in st.session_state:
-            st.session_state["just_posted"] = True
-        st.experimental_rerun()
+        st.success("Comment added succesfully")
+#         date = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+#         db.insert(conn, [[name, comment, date]])
+#         if "just_posted" not in st.session_state:
+#             st.session_state["just_posted"] = True
+#         st.experimental_rerun()
