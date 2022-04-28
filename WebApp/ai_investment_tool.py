@@ -1090,29 +1090,35 @@ if st.checkbox("Run Monte Carlo Portfolio Optimization algorithm"):
 
             # plot efficient frontier
             make_efficient_frontier(portfolios["Portfolio Variance"], portfolios["Expected Return"])
+            
+            
+            with st.form("form_MC"):
+                if st.checkbox("Minimize volatility"):
 
-            if st.checkbox("Minimize volatility"):
+                    # Use new formula for better results
+                    optimal_min_portfolio = portfolios[portfolios["Portfolio Variance"]==portfolios["Portfolio Variance"].min()].T
+                    opt_min_weights = portfolios[portfolios["Portfolio Variance"]==portfolios["Portfolio Variance"].min()].to_numpy()[0][0:len(tickers)]
+                    min_allocation = optimal_portfolio_weights(opt_min_weights, tickers)
+                    st.write("Reccomended allocation for minimum variance", min_allocation)
 
-                # Use new formula for better results
-                optimal_min_portfolio = portfolios[portfolios["Portfolio Variance"]==portfolios["Portfolio Variance"].min()].T
-                opt_min_weights = portfolios[portfolios["Portfolio Variance"]==portfolios["Portfolio Variance"].min()].to_numpy()[0][0:len(tickers)]
-                min_allocation = optimal_portfolio_weights(opt_min_weights, tickers)
-                st.write("Reccomended allocation for minimum variance", min_allocation)
+                    make_efficient_frontier_opt(portfolios["Portfolio Variance"], portfolios["Expected Return"], (optimal_min_portfolio.T)["Portfolio Variance"].values[0], (optimal_min_portfolio.T)["Expected Return"].values[0], 0, 0)
 
-                make_efficient_frontier_opt(portfolios["Portfolio Variance"], portfolios["Expected Return"], (optimal_min_portfolio.T)["Portfolio Variance"].values[0], (optimal_min_portfolio.T)["Expected Return"].values[0], 0, 0)
+                if st.checkbox("Maximize Sharpe Ratio"):
 
-            if st.checkbox("Maximize Sharpe Ratio"):
+                    risk_factor = 0.01 # it is usually the treasury bond yield
 
-                risk_factor = 0.01 # it is usually the treasury bond yield
+                    # Use new formula for better results
+                    optimal_risk_port = portfolios[portfolios["Sharpe Ratio"]==portfolios["Sharpe Ratio"].max()].T
+                    #optimal_risk_port_df = optimal_risk_port.to_frame()
+                    optimal_risk_port.columns = ['Summary']
 
-                # Use new formula for better results
-                optimal_risk_port = portfolios[portfolios["Sharpe Ratio"]==portfolios["Sharpe Ratio"].max()].T
-                #optimal_risk_port_df = optimal_risk_port.to_frame()
-                optimal_risk_port.columns = ['Summary']
-                
 
-                opt_weights = portfolios[portfolios["Sharpe Ratio"]==portfolios["Sharpe Ratio"].max()].to_numpy()[0][0:len(tickers)]
-                allocation = optimal_portfolio_weights(opt_weights, tickers)
-                st.write("Reccomended allocation for maximum Sharpe Ratio", allocation)
+                    opt_weights = portfolios[portfolios["Sharpe Ratio"]==portfolios["Sharpe Ratio"].max()].to_numpy()[0][0:len(tickers)]
+                    allocation = optimal_portfolio_weights(opt_weights, tickers)
+                    st.write("Reccomended allocation for maximum Sharpe Ratio", allocation)
 
-                make_efficient_frontier_opt(portfolios["Portfolio Variance"], portfolios["Expected Return"], 0, 0, (optimal_risk_port.T)["Portfolio Variance"][0], (optimal_risk_port.T)["Expected Return"][0], min_volatility = False)
+                    make_efficient_frontier_opt(portfolios["Portfolio Variance"], portfolios["Expected Return"], 0, 0, (optimal_risk_port.T)["Portfolio Variance"][0], (optimal_risk_port.T)["Expected Return"][0], min_volatility = False)
+                    
+                submitted = st.form_submit_button("Submit")
+                if submitted:
+                  st.success("Loading data!")
