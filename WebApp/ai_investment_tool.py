@@ -53,7 +53,6 @@ from scipy.special import softmax
 import datetime
 
 from dateutil import parser
-from utils import chart, db
 
 timestr = time.strftime("%Y%m%d")
 COMMENT_TEMPLATE_MD = """{} - {}
