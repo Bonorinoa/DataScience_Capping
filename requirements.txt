@@ -28,6 +28,12 @@ datetime
 matplotlib
 plotly
 emojis
+google-api-python-client
+google-auth
+google-auth-httplib2
+protobuf
+click==8
+altair
 
 #### Version specific
 pyyaml==5.4.1
