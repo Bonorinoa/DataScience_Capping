@@ -1,0 +1,42 @@
+# Twint
+
+!git clone --depth=1 https://github.com/twintproject/twint.git 
+
+# After installing tweets open its requirements.txt file and set aiohttp==3.7.0
+
+## must update requirements.txt for compatibility aiohttp==3.7.0
+
+!cd /content/twint && pip3 install . -r requirements.txt --quiet
+
+yfinance --upgrade --no-cache-dir
+
+streamlit 
+pyngrok==4.1.1
+
+transformers 
+
+tensorflow 
+
+numpy==1.19.3
+
+emojis
+
+pyyaml==5.4.1
+
+pandas_ta 
+
+pandas
+scipy.special.softmax
+
+pandas_datareader
+datetime
+
+matplotlib.pyplot
+plotly.graph_objects
+plotly.express
+
+os
+re
+emojis
+PIL
+dateutil.parser
