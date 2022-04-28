@@ -15,7 +15,7 @@ fake-useragent
 py-googletransx
 
 ##### WebApp dependencies
-yfinance --upgrade --no-cache-dir
+yfinance
 streamlit 
 pyngrok==4.1.1
 transformers 
