@@ -349,12 +349,14 @@ st.subheader("by Augusto Gonzalez-Bonorino and Ethan Aug")
 # Containers help separate content. 
 # Make sure to assign relevant names to distinguish containers
 description = st.container()
-description.write("""The objective of this Webapp is to provide informative data and models of the stock market while empowering the user.
-                    This app provides a lot of flexibility in terms of input: Choose your own ticker and time range to investigate and gain insight
-                    on key metrics. With the everincreasing influence of technology, we felt it was important to include a social media sentiment score.
-                    Scraping Twitter in real time, the app outputs tweets containing your selected ticker, calculates a daily sentiment score and uses
-                    this alongside historical data in the models. There is also flexibility in model selection and hyperparameter tuning. 
-                    Investigate different stocks, dates, models and hyperparamters to come to a data driven solution. Power to the user. """)
+description.write("""With the ever increasing capability of Machine Learning and otherwise predictive methodologies, 
+                    the average person is left behind while companies and engineers utilize these strategies to optimize their assets. The Objective of this application is 
+                    to change that, providing a platform that empowers the user with the predictive capabilities they have gone without. By providing 
+                    customization with insight, users can investigate the stock ticker of any company, run predictive models and optimize their portfolio 
+                    allocation. Experimenting with Machine Learning models such as RNN, LSTM and Random Forest, users have the ability to build a customized 
+                    dataset and view performance metrics of their models. Providing portfolio optimization algorithms, users can choose if they want to 
+                    minimize risk or maximize yield, and will receive a fund allocation suggestion. Investigate different stocks, dates, datasets and models 
+                    to come to a data driven solution. Power to the user. """)
 
 ######### SIDEBAR MENU ########
 st.sidebar.header("Data Science Capping \n Financial Engineering")
