@@ -23,12 +23,12 @@ tensorflow
 numpy==1.19.3
 emojis
 pandas_ta 
-scipy.special.softmax
+scipy
 pandas_datareader
 datetime
-matplotlib.pyplot
-plotly.graph_objects
-plotly.express
+matplotlib
+plotly
+plotly
 os
 re
 emojis
