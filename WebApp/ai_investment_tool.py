@@ -689,7 +689,7 @@ if st.checkbox("Build and Display Dataset"):
 
 if st.checkbox("Machine Learning"):
 
-  options = ['XGBoost', "Recurrent Neural Network (RNN)", "Random Forest Classifier", "LSTM"]
+  options = ["Recurrent Neural Network (RNN)", "Random Forest Classifier", "LSTM"]
 
   model_name = st.selectbox("Choose a model", options)
 
