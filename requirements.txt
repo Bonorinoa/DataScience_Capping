@@ -29,7 +29,6 @@ datetime
 matplotlib
 plotly
 emojis
-dateutil
 
 #### Version specific
 pyyaml==5.4.1
