@@ -12,7 +12,6 @@ import time
 import pandas as pd
 import pandas_ta as ta
 import numpy as np
-import shap
 
 import pandas_datareader as pdr
 
