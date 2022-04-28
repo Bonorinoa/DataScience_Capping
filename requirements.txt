@@ -1,42 +1,41 @@
-# Twint
+#### TWINT requirements
+--user --upgrade -e git+https://github.com/twintproject/twint.git@origin/master#egg=twint
+Python <=3.6
+aiohttp==3.7.0
+aiodns
+beautifulsoup4
+cchardet
+elasticsearch
+pysocks
+pandas >=0.23.0
+aiohttp_socks
+schedule
+geopy
+fake-useragent
+py-googletransx
 
-!git clone --depth=1 https://github.com/twintproject/twint.git 
-
-# After installing tweets open its requirements.txt file and set aiohttp==3.7.0
-
-## must update requirements.txt for compatibility aiohttp==3.7.0
-
-!cd /content/twint && pip3 install . -r requirements.txt --quiet
-
+##### WebApp dependencies
 yfinance --upgrade --no-cache-dir
-
 streamlit 
 pyngrok==4.1.1
-
 transformers 
-
 tensorflow 
-
 numpy==1.19.3
-
 emojis
-
-pyyaml==5.4.1
-
 pandas_ta 
-
-pandas
 scipy.special.softmax
-
 pandas_datareader
 datetime
-
 matplotlib.pyplot
 plotly.graph_objects
 plotly.express
-
 os
 re
 emojis
 PIL
 dateutil.parser
+
+#### Version specific
+pyyaml==5.4.1
+pyngrok==4.1.1
+numpy==1.19.3
