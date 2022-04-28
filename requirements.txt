@@ -17,10 +17,9 @@ googletransx
 ##### WebApp dependencies
 yfinance
 streamlit 
-pyngrok==4.1.1
 transformers 
 tensorflow 
-numpy==1.19.3
+sklearn
 emojis
 pandas_ta 
 scipy
