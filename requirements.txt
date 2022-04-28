@@ -28,12 +28,9 @@ pandas_datareader
 datetime
 matplotlib
 plotly
-plotly
-os
-re
 emojis
 PIL
-dateutil.parser
+dateutil
 
 #### Version specific
 pyyaml==5.4.1
