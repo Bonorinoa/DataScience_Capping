@@ -12,6 +12,7 @@ import time
 import pandas as pd
 import pandas_ta as ta
 import numpy as np
+import shap
 
 import pandas_datareader as pdr
 
@@ -979,7 +980,7 @@ if st.checkbox("Machine Learning"):
       # As of now, Keras doesn't provide a way to extract feature importance. This is the closest I have come but
       # It does not work with sequential models
       if st.checkbox("Show Feature Importances"):
-        import shap
+        
         shap.initjs()
         explainer = shap.TreeExplainer(model)
         shap_values = explainer.shap_values(X_train[:, :, np.newaxis])
