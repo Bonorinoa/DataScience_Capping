@@ -776,7 +776,7 @@ if st.checkbox("Machine Learning"):
         visual_checkbox = st.checkbox("Visualize RNN")
         if visual_checkbox:
           plot_model(model, to_file='WebApp/images/rnn.jpg', show_shapes=True, show_layer_names=True)
-          image = Image.open('WebApp/images/stonks.jpg')
+          image = Image.open('WebApp/images/rnn.jpg')
           st.image(image)
 
         pred_checkbox = st.checkbox("Predict Tomorrows Movement")
