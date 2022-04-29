@@ -55,12 +55,12 @@ import datetime
 
 from dateutil import parser
 
+
 timestr = time.strftime("%Y%m%d")
-COMMENT_TEMPLATE_MD = """{} - {}
-> {}"""
+COMMENT_TEMPLATE_MD = """{} - {} > {}"""
+
 
 ######## FUNCTIONS ########
-
 def get_ticker(name):
 
     ticker = yf.Ticker(name)  
@@ -772,8 +772,8 @@ if st.checkbox("Machine Learning"):
 
         visual_checkbox = st.checkbox("Visualize RNN")
         if visual_checkbox:
-          plot_model(model, to_file='rnn_model_plot.png', show_shapes=True, show_layer_names=True)
-          image = Image.open('rnn_model_plot.png')
+          plot_model(model, to_file='C:\\Users\\Bonoc\\Documents\\GitHub\\DataScience_Capping\\WebApp\\images\\rnn_model_plot.png', show_shapes=True, show_layer_names=True)
+          image = Image.open('C:\\Users\\Bonoc\\Documents\\GitHub\\DataScience_Capping\\WebApp\\images\\rnn_model_plot.png')
           st.image(image)
 
         pred_checkbox = st.checkbox("Predict Tomorrows Movement")
@@ -1126,38 +1126,3 @@ if st.checkbox("Run Monte Carlo Portfolio Optimization algorithm"):
                 if submitted:
                   st.success("Loading data!")
                 
-# Comments part
-
-# comments = pd.DataFrame()
-
-# with st.expander("💬 Open comments"):
-
-#     # Show comments
-
-#     st.write("**Comments:**")
-
-#     for index, entry in enumerate(comments.itertuples()):
-#         st.markdown(COMMENT_TEMPLATE_MD.format(entry.name, entry.date, entry.comment))
-
-#         is_last = index == len(comments) - 1
-#         is_new = "just_posted" in st.session_state and is_last
-#         if is_new:
-#             st.success("☝️ Your comment was successfully posted.")
-
-#     space(2)
-
-#     # Insert comment
-
-#     st.write("**Add your own comment:**")
-#     form = st.form("comment")
-#     name = form.text_input("Name")
-#     comment = form.text_area("Comment")
-#     submit = form.form_submit_button("Add comment")
-
-#     if submit:
-#         st.success("Comment added succesfully")
-# #         date = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-# #         db.insert(conn, [[name, comment, date]])
-# #         if "just_posted" not in st.session_state:
-# #             st.session_state["just_posted"] = True
-# #         st.experimental_rerun()
