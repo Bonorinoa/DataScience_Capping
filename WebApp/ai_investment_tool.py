@@ -12,7 +12,6 @@ import time
 import pandas as pd
 import pandas_ta as ta
 import numpy as np
-import shap
 
 import pandas_datareader as pdr
 
@@ -111,6 +110,7 @@ def append_TI(df, tech_indicators):
 
     if indicator == "MACD":
       df.ta.macd(close='close', fast=12, slow=26, signal=9, append=True)
+      df = df.drop(["MACDh_12_26_9", "MACDs_12_26_9"], axis = 1)
 
     if indicator == "Aroon Oscillator":
       df.ta.aroon(append = True)
@@ -349,12 +349,14 @@ st.subheader("by Augusto Gonzalez-Bonorino and Ethan Aug")
 # Containers help separate content. 
 # Make sure to assign relevant names to distinguish containers
 description = st.container()
-description.write("""The objective of this Webapp is to provide informative data and models of the stock market while empowering the user.
-                    This app provides a lot of flexibility in terms of input: Choose your own ticker and time range to investigate and gain insight
-                    on key metrics. With the everincreasing influence of technology, we felt it was important to include a social media sentiment score.
-                    Scraping Twitter in real time, the app outputs tweets containing your selected ticker, calculates a daily sentiment score and uses
-                    this alongside historical data in the models. There is also flexibility in model selection and hyperparameter tuning. 
-                    Investigate different stocks, dates, models and hyperparamters to come to a data driven solution. Power to the user. """)
+description.write("""With the ever increasing capability of Machine Learning and otherwise predictive methodologies, 
+                    the average person is left behind while companies and engineers utilize these strategies to optimize their assets. The Objective of this application is 
+                    to change that, providing a platform that empowers the user with the predictive capabilities they have gone without. By providing 
+                    customization with insight, users can investigate the stock ticker of any company, run predictive models and optimize their portfolio 
+                    allocation. Experimenting with Machine Learning models such as RNN, LSTM and Random Forest, users have the ability to build a customized 
+                    dataset and view performance metrics of their models. Providing portfolio optimization algorithms, users can choose if they want to 
+                    minimize risk or maximize yield, and will receive a fund allocation suggestion. Investigate different stocks, dates, datasets and models 
+                    to come to a data driven solution. Power to the user. """)
 
 ######### SIDEBAR MENU ########
 st.sidebar.header("Data Science Capping \n Financial Engineering")
@@ -689,7 +691,7 @@ if st.checkbox("Build and Display Dataset"):
 
 if st.checkbox("Machine Learning"):
 
-  options = ['XGBoost', "Recurrent Neural Network (RNN)", "Random Forest Classifier", "LSTM"]
+  options = ["Recurrent Neural Network (RNN)", "Random Forest Classifier", "LSTM"]
 
   model_name = st.selectbox("Choose a model", options)
 
@@ -703,11 +705,15 @@ if st.checkbox("Machine Learning"):
     if len(ticker_name) >= 1: 
       train_stock_prices = get_hist_data(ticker_name, from_date, to_date)
 
-    st.write("Here is your dataset for training:")
-    st.write(train_stock_prices)
-
     tech_indicator_options = ['RSI', 'SMA2 (rolling mean)', 'Force Index', "MACD", "Aroon Oscillator", "On-Balance Volume (OBV)"]
     tech_indicators = st.multiselect("Select the technical indicators you would like to include in the model", tech_indicator_options)
+    
+    train_stock_prices["Diff"] = train_stock_prices.Close.diff()
+    train_stock_prices["y"] = train_stock_prices["Diff"].apply(lambda x: 1 if x > 0 else 0).shift(-1)
+
+    train_stock_prices = append_TI(train_stock_prices, tech_indicators)
+    st.write("Here is your dataset for training:")
+    st.write(train_stock_prices.drop(columns = ['y', 'Diff']))
 
   if st.checkbox("Load model"):
   
@@ -724,8 +730,6 @@ if st.checkbox("Machine Learning"):
 
       # Load model
       df = train_stock_prices
-      df["Diff"] = df.Close.diff()
-      df["y"] = df["Diff"].apply(lambda x: 1 if x > 0 else 0).shift(-1)
 
       df = append_TI(df, tech_indicators)
 
@@ -752,7 +756,6 @@ if st.checkbox("Machine Learning"):
 
 
       st.success("Success!")
-      st.write(df)
 
       with st.form("form"):
         acc_checkbox = st.checkbox("Test Simple RNN Accuracy")
@@ -772,25 +775,21 @@ if st.checkbox("Machine Learning"):
 
         visual_checkbox = st.checkbox("Visualize RNN")
         if visual_checkbox:
-          plot_model(model, to_file='C:\\Users\\Bonoc\\Documents\\GitHub\\DataScience_Capping\\WebApp\\images\\rnn_model_plot.png', show_shapes=True, show_layer_names=True)
-          image = Image.open('C:\\Users\\Bonoc\\Documents\\GitHub\\DataScience_Capping\\WebApp\\images\\rnn_model_plot.png')
+          plot_model(model, to_file='foto_perfil.jpg', show_shapes=True, show_layer_names=True)
+          image = Image.open('foto_perfil.jpg')
           st.image(image)
 
         pred_checkbox = st.checkbox("Predict Tomorrows Movement")
         if pred_checkbox:
           y_pred = model.predict(X_test[:, :, np.newaxis][-1].reshape(1, -1))
-          st.write(y_pred)
-          #y_pred = model.predict(X_test[-1].reshape(1, -1))
 
-          #if y_pred == 1:
-           # st.write("The model predicts " + ticker_name + " stock will increase tomorrow")
+          if y_pred > 0.5:
+            st.write("The model predicts " + ticker_name + " stock will increase tomorrow")
 
-          #else:
-           # st.write("The model predicts " + ticker_name + " stock will decrease tomorrow")
+          else:
+            st.write("The model predicts " + ticker_name + " stock will decrease tomorrow")
 
         submitted = st.form_submit_button("Submit")
-        if submitted:
-          st.write("checkbox", loss_checkbox, "checkbox", acc_checkbox, "checkbox", visual_checkbox)
 
       # Display predictions and Cost history
 
@@ -827,8 +826,6 @@ if st.checkbox("Machine Learning"):
       
       # Load model
       df = train_stock_prices
-      df["Diff"] = df.Close.diff()
-      df["y"] = df["Diff"].apply(lambda x: 1 if x > 0 else 0).shift(-1)
 
       df = append_TI(df, tech_indicators)
             
@@ -846,7 +843,7 @@ if st.checkbox("Machine Learning"):
         shuffle=False,
       )
 
-      @st.cache
+      
       def Classify_RF(df):
         RF_Model = RandomForestClassifier()
         RF_Model.fit(
@@ -856,7 +853,7 @@ if st.checkbox("Machine Learning"):
 
         return RF_Model
 
-      @st.cache
+      
       def RF_Predictions(RF_Model):
         y_pred = RF_Model.predict(X_test)
         return y_pred
@@ -867,7 +864,6 @@ if st.checkbox("Machine Learning"):
       
 
       st.success("Success!")
-      st.write(df)
   
       with st.form("form"):
         feat_check = st.checkbox("See Feature Importance")
@@ -907,8 +903,6 @@ if st.checkbox("Machine Learning"):
 
 
         submitted = st.form_submit_button("Submit")
-        if submitted:
-          st.write("checkbox", feat_check, "checkbox", acc_checkbox, "checkbox", report_checkbox, "checkbox", pred_checkbox)
 
 
       # Data Pre Processing
@@ -922,8 +916,6 @@ if st.checkbox("Machine Learning"):
     if model_name == 'LSTM':
     
       df = train_stock_prices
-      df["Diff"] = df.Close.diff()
-      df["y"] = df["Diff"].apply(lambda x: 1 if x > 0 else 0).shift(-1)
 
       df = append_TI(df, tech_indicators)
       
@@ -948,7 +940,6 @@ if st.checkbox("Machine Learning"):
       y_pred = model.predict(X_test[:, :, np.newaxis])
       
       st.success("Success!")
-      st.write(df)
 
       with st.form("form"):
 
@@ -973,22 +964,17 @@ if st.checkbox("Machine Learning"):
           image = Image.open('lstm_model_plot.png')
           st.image(image)
 
+        pred_checkbox = st.checkbox("Predict Tomorrows Movement")
+        if pred_checkbox:
+          y_pred = model.predict(X_test[:, :, np.newaxis][-1].reshape(1, -1))
+
+          if y_pred > 0.5:
+            st.write("The model predicts " + ticker_name + " stock will increase tomorrow")
+
+          else:
+            st.write("The model predicts " + ticker_name + " stock will decrease tomorrow")
+
         submitted = st.form_submit_button("Submit")
-        if submitted:
-          st.write("checkbox", acc_checkbox, "checkbox", loss_checkbox, "checkbox", visual_checkbox)
-
-      # As of now, Keras doesn't provide a way to extract feature importance. This is the closest I have come but
-      # It does not work with sequential models
-      if st.checkbox("Show Feature Importances"):
-        
-        shap.initjs()
-        explainer = shap.TreeExplainer(model)
-        shap_values = explainer.shap_values(X_train[:, :, np.newaxis])
-
-        # visualize the first prediction's explanation 
-        shap.force_plot(explainer.expected_value, shap_values[0,:], X.iloc[0,:], matplotlib = True)
-
-        st.pyplot(shap.summary_plot(shap_values, X_train[:, :, np.newaxis], plot_type="bar"))
 
 ######### PORTFOLIO OPTIMIZATION ##########
 
