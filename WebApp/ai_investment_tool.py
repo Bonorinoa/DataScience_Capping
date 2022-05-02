@@ -497,11 +497,11 @@ if st.checkbox("Show tweets (BETA)"):
         
         start_date += datetime.timedelta(days=1)
 
-#     if len(tweets_df) < 1:
-#         st.warning("No tweets found. Try selecting a bigger range of dates.")
-#     else:
-    st.write(tweets_df)
-    st.write(tweets_df['Tweet'].tolist())
+    if len(tweets_df) < 1:
+        st.warning("No tweets found. Try selecting a bigger range of dates.")
+    else:
+        st.write(tweets_df)
+        st.write(tweets_df['Tweet'].tolist())
 
     if st.checkbox("Build Sentiment Analysis Pipeline..."):
 
