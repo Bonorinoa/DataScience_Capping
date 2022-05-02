@@ -343,7 +343,7 @@ def correlation_matrix(df):
 
 ######## MAIN BODY ########
 
-st.title('AI-aid investment analysis tool')
+st.title('FinML: AN AI-powered investment analysis tool')
 st.subheader("by Augusto Gonzalez-Bonorino and Ethan Aug")
 
 # Containers help separate content. 
