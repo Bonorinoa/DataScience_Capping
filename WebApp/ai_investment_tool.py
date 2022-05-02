@@ -775,8 +775,8 @@ if st.checkbox("Machine Learning"):
 
         visual_checkbox = st.checkbox("Visualize RNN")
         if visual_checkbox:
-          plot_model(model, to_file='WebApp/images/rnn.jpg', show_shapes=True, show_layer_names=True)
-          image = Image.open('WebApp/images/rnn.jpg')
+          #plot_model(model, to_file='WebApp/images/rnn.jpg', show_shapes=True, show_layer_names=True)
+          image = Image.open('WebApp/images/rnn_model_plot.png')
           st.image(image)
 
         pred_checkbox = st.checkbox("Predict Tomorrows Movement")
@@ -960,7 +960,7 @@ if st.checkbox("Machine Learning"):
 
         visual_checkbox = st.checkbox("Visualize LSTM Network")
         if visual_checkbox:
-          plot_model(model, to_file='lstm_model_plot.png', show_shapes=True, show_layer_names=True)
+          #plot_model(model, to_file='lstm_model_plot.png', show_shapes=True, show_layer_names=True)
           image = Image.open('lstm_model_plot.png')
           st.image(image)
 
