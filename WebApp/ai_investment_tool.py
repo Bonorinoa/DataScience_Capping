@@ -729,35 +729,35 @@ if st.checkbox("Machine Learning"):
       " recurrent neural networks cannot account for these events in their predictions.")
 
       # Load model
-        @st.cache(allow_output_mutation=True)
-        def RNN():
-            df = get_hist_data(ticker_name, from_date, to_date)
+      @st.cache(allow_output_mutation=True)
+      def RNN():
+        df = get_hist_data(ticker_name, from_date, to_date)
 
-            df["Diff"] = df.Close.diff()
-            df["y"] = df["Diff"].apply(lambda x: 1 if x > 0 else 0).shift(-1)
+        df["Diff"] = df.Close.diff()
+        df["y"] = df["Diff"].apply(lambda x: 1 if x > 0 else 0).shift(-1)
 
-            df = append_TI(df, tech_indicators)
+        df = append_TI(df, tech_indicators)
 
-            df = df.drop(
-            ["Diff"],
-            axis=1,
-            ).dropna()
-            X = StandardScaler().fit_transform(df.drop(["y"], axis=1))
-            y = df["y"].values
-            X_train, X_test, y_train, y_test = train_test_split(
-            X,
-            y,
-            test_size=0.2,
-            shuffle=False,
-            )
-            model = Sequential()
-            model.add(SimpleRNN(2, input_shape=(X_train.shape[1], 1)))
-            model.add(Dense(1, activation="sigmoid"))
-            model.compile(optimizer="adam", loss="binary_crossentropy", metrics=["acc"])
-            history = model.fit(X_train[:, :, np.newaxis], y_train, validation_split=0.2, epochs=100)
-            y_pred = model.predict(X_test[:, :, np.newaxis])
+        df = df.drop(
+        ["Diff"],
+        axis=1,
+        ).dropna()
+        X = StandardScaler().fit_transform(df.drop(["y"], axis=1))
+        y = df["y"].values
+        X_train, X_test, y_train, y_test = train_test_split(
+        X,
+        y,
+        test_size=0.2,
+        shuffle=False,
+        )
+        model = Sequential()
+        model.add(SimpleRNN(2, input_shape=(X_train.shape[1], 1)))
+        model.add(Dense(1, activation="sigmoid"))
+        model.compile(optimizer="adam", loss="binary_crossentropy", metrics=["acc"])
+        history = model.fit(X_train[:, :, np.newaxis], y_train, validation_split=0.2, epochs=100)
+        y_pred = model.predict(X_test[:, :, np.newaxis])
 
-            return model, y_pred, y_test, history, X_test
+        return model, y_pred, y_test, history, X_test
 
       model, y_pred, y_test, history, X_test = RNN()
 
