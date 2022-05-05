@@ -729,30 +729,37 @@ if st.checkbox("Machine Learning"):
       " recurrent neural networks cannot account for these events in their predictions.")
 
       # Load model
-      df = train_stock_prices
+        @st.cache(allow_output_mutation=True)
+        def RNN():
+            df = get_hist_data(ticker_name, from_date, to_date)
 
-      df = append_TI(df, tech_indicators)
+            df["Diff"] = df.Close.diff()
+            df["y"] = df["Diff"].apply(lambda x: 1 if x > 0 else 0).shift(-1)
 
-      df = df.drop(
-          [ "Diff"],
-          axis=1,
-      ).dropna()
+            df = append_TI(df, tech_indicators)
 
+            df = df.drop(
+            ["Diff"],
+            axis=1,
+            ).dropna()
+            X = StandardScaler().fit_transform(df.drop(["y"], axis=1))
+            y = df["y"].values
+            X_train, X_test, y_train, y_test = train_test_split(
+            X,
+            y,
+            test_size=0.2,
+            shuffle=False,
+            )
+            model = Sequential()
+            model.add(SimpleRNN(2, input_shape=(X_train.shape[1], 1)))
+            model.add(Dense(1, activation="sigmoid"))
+            model.compile(optimizer="adam", loss="binary_crossentropy", metrics=["acc"])
+            history = model.fit(X_train[:, :, np.newaxis], y_train, validation_split=0.2, epochs=100)
+            y_pred = model.predict(X_test[:, :, np.newaxis])
 
-      X = StandardScaler().fit_transform(df.drop(["y"], axis=1))
-      y = df["y"].values
-      X_train, X_test, y_train, y_test = train_test_split(
-          X,
-          y,
-          test_size=0.2,
-          shuffle=False,
-      )
-      model = Sequential()
-      model.add(SimpleRNN(2, input_shape=(X_train.shape[1], 1)))
-      model.add(Dense(1, activation="sigmoid"))
-      model.compile(optimizer="adam", loss="binary_crossentropy", metrics=["acc"])
-      history = model.fit(X_train[:, :, np.newaxis], y_train, validation_split=0.2, epochs=100)
-      y_pred = model.predict(X_test[:, :, np.newaxis])
+            return model, y_pred, y_test, history, X_test
+
+      model, y_pred, y_test, history, X_test = RNN()
 
 
       st.success("Success!")
@@ -826,42 +833,43 @@ if st.checkbox("Machine Learning"):
 
       
       # Load model
-      df = train_stock_prices
+      @st.cache(allow_output_mutation=True)
+      def RF_Model():
+        df = get_hist_data(ticker_name, from_date, to_date)
 
-      df = append_TI(df, tech_indicators)
-            
-        
-      df = df.drop(
+        df["Diff"] = df.Close.diff()
+        df["y"] = df["Diff"].apply(lambda x: 1 if x > 0 else 0).shift(-1)
+
+        df = append_TI(df, tech_indicators)
+
+        df = df.drop(
         ["Diff"],
         axis=1,
-      ).dropna()
-      X = df.drop(["y"], axis=1).values
-      y = df["y"].values
-      X_train, X_test, y_train, y_test = train_test_split(
-        X,
-        y,
-        test_size=0.2,
-        shuffle=False,
-      )
+        ).dropna()
+        X = df.drop(["y"], axis=1).values
+        y = df["y"].values
+        X_train, X_test, y_train, y_test = train_test_split(
+          X,
+          y,
+          test_size=0.2,
+          shuffle=False,
+        )
 
-      
-      def Classify_RF(df):
         RF_Model = RandomForestClassifier()
         RF_Model.fit(
           X_train,
           y_train,
         )
 
-        return RF_Model
-
-      
-      def RF_Predictions(RF_Model):
         y_pred = RF_Model.predict(X_test)
-        return y_pred
+
+        return RF_Model, y_pred, y_test, X_test
 
 
-      RF_Model = Classify_RF(df)
-      y_pred = RF_Predictions(RF_Model)
+
+
+      RF_Model, y_pred, y_test, X_test = RF_Model()
+      
       
 
       st.success("Success!")
@@ -915,30 +923,49 @@ if st.checkbox("Machine Learning"):
       # Display predictions and Cost history
 
     if model_name == 'LSTM':
+        
+        st.write('''LSTM is a type of recurrent neural network capable of learning order dependence in sequence prediction problems. 
+                  The main difference with RNNs is that LSTMs are suitable for remembering elements of a sequence that lie far away
+                  from the current index. LSTMs are also able to recognize important patterns and trends, but more importantly they 
+                  can also recognize unimportant trends, dismissing information that may throw off the predictive accuracy of the model.
+                  They are commonly applied in tasks such as Speech Recognition and Machine Translation, and have seen quite some success 
+                  in the stock market field.''')
     
-      df = train_stock_prices
+      @st.cache(allow_output_mutation=True)
+      def LSTM_pipeline():
+        df = get_hist_data(ticker_name, from_date, to_date)
 
-      df = append_TI(df, tech_indicators)
-      
-      df = df.drop(
+        df["Diff"] = df.Close.diff()
+        df["y"] = df["Diff"].apply(lambda x: 1 if x > 0 else 0).shift(-1)
+
+        df = append_TI(df, tech_indicators)
+
+        df = df.drop(
         ["Diff"],
         axis=1,
-      ).dropna()
+        ).dropna()
 
-      X = StandardScaler().fit_transform(df.drop(["y"], axis=1))
-      y = df["y"].values
-      X_train, X_test, y_train, y_test = train_test_split(
-        X,
-        y,
-        test_size=0.2,
-        shuffle=False,
-      )
-      model = Sequential()
-      model.add(LSTM(2, input_shape=(X_train.shape[1], 1)))
-      model.add(Dense(1, activation="sigmoid"))
-      model.compile(optimizer="adam", loss="binary_crossentropy", metrics=["accuracy"])
-      history = model.fit(X_train[:, :, np.newaxis], y_train, validation_split=0.2, epochs=100)
-      y_pred = model.predict(X_test[:, :, np.newaxis])
+        
+        X = StandardScaler().fit_transform(df.drop(["y"], axis=1))
+        y = df["y"].values
+        X_train, X_test, y_train, y_test = train_test_split(
+          X,
+          y,
+          test_size=0.2,
+          shuffle=False,
+        )
+        model = Sequential()
+        model.add(LSTM(2, input_shape=(X_train.shape[1], 1)))
+        model.add(Dense(1, activation="sigmoid"))
+        model.compile(optimizer="adam", loss="binary_crossentropy", metrics=["accuracy"])
+        history = model.fit(X_train[:, :, np.newaxis], y_train, validation_split=0.2, epochs=100)
+        y_pred = model.predict(X_test[:, :, np.newaxis])
+        
+
+        return model, y_pred, y_test, history, X_test
+
+ 
+      model, y_pred, y_test, history, X_test = LSTM_pipeline() 
       
       st.success("Success!")
 
