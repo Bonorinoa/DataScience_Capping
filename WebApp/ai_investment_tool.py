@@ -924,7 +924,7 @@ if st.checkbox("Machine Learning"):
 
     if model_name == 'LSTM':
         
-        st.write('''LSTM is a type of recurrent neural network capable of learning order dependence in sequence prediction problems. 
+      st.write('''LSTM is a type of recurrent neural network capable of learning order dependence in sequence prediction problems. 
                   The main difference with RNNs is that LSTMs are suitable for remembering elements of a sequence that lie far away
                   from the current index. LSTMs are also able to recognize important patterns and trends, but more importantly they 
                   can also recognize unimportant trends, dismissing information that may throw off the predictive accuracy of the model.
