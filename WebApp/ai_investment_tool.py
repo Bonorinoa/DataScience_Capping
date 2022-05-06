@@ -260,7 +260,7 @@ def optimal_portfolio_weights(weights, stocks):
     df.Weights = df.Weights.map(lambda x: '{:.2%}'.format(x))
     return df
 
-def get_tweets(ticker, num_tweets, start, end):
+def get_tweets_test(ticker, num_tweets, start, end):
 
     config = twint.Config()
 
@@ -281,6 +281,24 @@ def get_tweets(ticker, num_tweets, start, end):
         data = pd.DataFrame([["None", start]], columns=['tweet', 'date'])
     else:
         data = pd.DataFrame(tweets_df[['tweet', 'date']])
+
+    return data
+
+def get_tweets(ticker, num_tweets):
+
+    config = twint.Config()
+
+    config.Search = "$" + ticker
+    config.Lang = "en"
+    config.Limit = num_tweets
+
+    config.Pandas = True
+
+    twint.run.Search(config)
+
+    tweets_df = twint.storage.panda.Tweets_df.head(num_tweets)
+
+    data = pd.DataFrame(tweets_df[['tweet', 'date']])
 
     return data
 
@@ -466,6 +484,77 @@ if st.checkbox('Show charts for Start date: %s\n\nEnd date: %s' % (start_date, e
         make_ohlc(ts_stock_prices, ticker_name)
   
 ######## TWEETS ########
+  if st.checkbox("Show Tweets"):
+    num_tweets = st.slider("Number of tweets", 1, 100)
+    tweets_with_date = get_tweets(ticker_name, num_tweets)
+    tweets = tweetdf_to_list(tweets_with_date)
+    cleanTweets = [preprocess(tweet) for tweet in tweets]
+    st.write(cleanTweets)
+
+    if st.checkbox("Build Sentiment Analysis Pipeline..."):
+
+        # Here we can have an input box for the user to select a model
+        model_name = f"cardiffnlp/twitter-roberta-base-sentiment-latest"
+
+        # Load models
+        with st.spinner("Loading..."):
+
+            classifier = compute_sentiment(model_name)
+        
+        st.success("Ready!")
+
+        st.write("Here are our predictions. NOTE: scores range from 1 = very bad to 5 = very good")
+
+        results = classifier(cleanTweets)
+
+        labels = []
+        scores = []
+
+        for i in results:
+           label = i['label']
+           score = i['score']
+
+           labels.append(label)
+           scores.append(score)
+
+        scores_df = pd.DataFrame(results)
+
+        # labels = []
+
+        # for i in range(len(scores_df['label'])):
+
+        #     label = float(scores_df['label'][i][0])
+        #     labels.append(label)
+
+        # sentiment_score = ( labels * scores_df['score'] )
+
+        scores_df["sent_score"] = scores
+
+        scores_df['Label'] = labels
+
+        scores_df['Tweet'] = cleanTweets
+
+        scores_df['Date'] = tweets_with_date['date']
+
+        scores_df = tweetDates_to_DateTime(scores_df)
+
+        st.write(scores_df)
+
+        sentiment_avg = sum(scores_df['sent_score']) / len(scores_df)
+
+
+        ## Derive more efficient way of computing sentiment score ##
+        st.write("Average Sentiment")
+        st.write(sentiment_avg)
+
+        if sentiment_avg <= 2:
+            st.write(emojis.encode("NEGATIVE :chart_with_downwards_trend:"))
+
+        elif (sentiment_avg > 2) and (sentiment_avg <= 3):
+            st.write(emojis.encode("NEUTRAL :neutral_face:"))
+        
+        else:
+            st.write(emojis.encode("POSITIVE :chart_with_upwards_trend:"))
 
 # input bars to select ticker and num_tweets
 
