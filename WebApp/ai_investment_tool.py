@@ -469,98 +469,68 @@ if st.checkbox('Show charts for Start date: %s\n\nEnd date: %s' % (start_date, e
 
 # input bars to select ticker and num_tweets
 
-if st.checkbox("Show tweets (BETA)"):
+if st.checkbox("Build Sentiment Analysis Pipeline..."):
 
-    num_tweets = st.slider("Number of tweets to get per day for given range", 2, 100)
-    rangeDays = (end_date - start_date).days
-    st.write("You selected ", num_tweets, " tweets per day, for ", rangeDays, " days.")
+      rangeDays = (end_date - start_date).days
 
-    tweets_df = pd.DataFrame()
-    tweets_df_TEMP = pd.DataFrame()
+      text = st.text_input('Enter text to analyze')
 
-    for d in range(rangeDays-1):
+      # Here we can have an input box for the user to select a model
+      model_name = f"cardiffnlp/twitter-roberta-base-sentiment-latest"
 
-        dailyEnd = start_date + datetime.timedelta(days=1)
+      # Load models
+      with st.spinner("Loading..."):
 
-        tweets_with_date_day = get_tweets(ticker_name, num_tweets, start_date.strftime("%Y-%m-%d %H:%M:%S"), str(dailyEnd))
-        tweets_day = tweetdf_to_list(tweets_with_date_day)
-        cleanTweets_day = [preprocess(tweet) for tweet in tweets_day]
-        
-        tweets_df_TEMP['Date'] = tweets_with_date_day['date']
-        
-        tweets_df_TEMP['Tweet'] = pd.Series(cleanTweets_day)
-        
-        if type(tweets_df_TEMP['Date']) == str:
-            tweets_df_TEMP = tweetDates_to_DateTime(tweets_df_TEMP)
+          classifier = compute_sentiment(model_name)
+      
+      st.success("Ready!")
 
-            tweets_df = tweets_df.append(tweets_df_TEMP, ignore_index = True)
-        
-        start_date += datetime.timedelta(days=1)
+      st.write("Here are our predictions. NOTE: Daily sentimet is computed as a weighted sum of the number of positive and negative tweets." +
+      "If the sum is positive then daily sentiment is considered overall positive, negative otherwise.")
 
-    if len(tweets_df) < 1:
-        st.warning("No tweets found. Try selecting a bigger range of dates.")
-    else:
-        st.write(tweets_df)
-        st.write(tweets_df['Tweet'].tolist())
+      results = classifier(text)
 
-    if st.checkbox("Build Sentiment Analysis Pipeline..."):
+      labels = []
+      scores = []
 
-        # Here we can have an input box for the user to select a model
-        model_name = f"cardiffnlp/twitter-roberta-base-sentiment-latest"
+      for i in results:
+          label = i['label']
+          score = i['score']
 
-        # Load models
-        with st.spinner("Loading..."):
+          if label == "Neutral": 
+              labels.append(label+" 0")
+          elif label == "Positive":
+              labels.append(label+" 1")
+          else:
+              labels.append(label+"-1")     
+          
+          scores.append(score)
 
-            classifier = compute_sentiment(model_name)
-        
-        st.success("Ready!")
+      results_df = pd.DataFrame(results)
 
-        st.write("Here are our predictions. NOTE: Daily sentimet is computed as a weighted sum of the number of positive and negative tweets." +
-        "If the sum is positive then daily sentiment is considered overall positive, negative otherwise.")
+      sent_scores = []
 
-        results = classifier(tweets_df['Tweet'].tolist())
+      for i in range(len(labels)):
+          sent_score = float(labels[i][-2:]) * scores[i]
+          sent_scores.append(sent_score)
 
-        labels = []
-        scores = []
+      scores_df = pd.concat([pd.Series(text), results_df], axis=1)
 
-        for i in results:
-           label = i['label']
-           score = i['score']
+      scores_df["sent_score"] = sent_scores
 
-           if label == "Neutral": 
-                labels.append(label+" 0")
-           elif label == "Positive":
-                labels.append(label+" 1")
-           else:
-               labels.append(label+"-1")     
-            
-           scores.append(score)
+      st.write(scores_df)
 
-        results_df = pd.DataFrame(results)
+      daily_avg_sentiment = ( sum(scores_df['sent_score']) / rangeDays )
 
-        sent_scores = []
+      ## Derive more efficient way of computing sentiment score ##
+      st.write("Daily Average Sentiment")
+      st.write(daily_avg_sentiment)
 
-        for i in range(len(labels)):
-            sent_score = float(labels[i][-2:]) * scores[i]
-            sent_scores.append(sent_score)
+      if daily_avg_sentiment < 0:
+          st.write(emojis.encode("NEGATIVE :chart_with_downwards_trend:"))
 
-        scores_df = pd.concat([tweets_df, results_df], axis=1)
-
-        scores_df["sent_score"] = sent_scores
-
-        st.write(scores_df)
-
-        daily_avg_sentiment = ( sum(scores_df['sent_score']) / rangeDays )
-
-        ## Derive more efficient way of computing sentiment score ##
-        st.write("Daily Average Sentiment")
-        st.write(daily_avg_sentiment)
-
-        if daily_avg_sentiment < 0:
-            st.write(emojis.encode("NEGATIVE :chart_with_downwards_trend:"))
-
-        else:
-            st.write(emojis.encode("POSITIVE :chart_with_upwards_trend:"))
+      else:
+          st.write(emojis.encode("POSITIVE :chart_with_upwards_trend:"))
 
 
 ######### DATASET ##########
@@ -729,30 +699,37 @@ if st.checkbox("Machine Learning"):
       " recurrent neural networks cannot account for these events in their predictions.")
 
       # Load model
-      df = train_stock_prices
+      @st.cache(allow_output_mutation=True)
+      def RNN():
+        df = get_hist_data(ticker_name, from_date, to_date)
 
-      df = append_TI(df, tech_indicators)
+        df["Diff"] = df.Close.diff()
+        df["y"] = df["Diff"].apply(lambda x: 1 if x > 0 else 0).shift(-1)
 
-      df = df.drop(
-          [ "Diff"],
-          axis=1,
-      ).dropna()
+        df = append_TI(df, tech_indicators)
 
+        df = df.drop(
+        ["Diff"],
+        axis=1,
+        ).dropna()
+        X = StandardScaler().fit_transform(df.drop(["y"], axis=1))
+        y = df["y"].values
+        X_train, X_test, y_train, y_test = train_test_split(
+        X,
+        y,
+        test_size=0.2,
+        shuffle=False,
+        )
+        model = Sequential()
+        model.add(SimpleRNN(2, input_shape=(X_train.shape[1], 1)))
+        model.add(Dense(1, activation="sigmoid"))
+        model.compile(optimizer="adam", loss="binary_crossentropy", metrics=["acc"])
+        history = model.fit(X_train[:, :, np.newaxis], y_train, validation_split=0.2, epochs=100)
+        y_pred = model.predict(X_test[:, :, np.newaxis])
 
-      X = StandardScaler().fit_transform(df.drop(["y"], axis=1))
-      y = df["y"].values
-      X_train, X_test, y_train, y_test = train_test_split(
-          X,
-          y,
-          test_size=0.2,
-          shuffle=False,
-      )
-      model = Sequential()
-      model.add(SimpleRNN(2, input_shape=(X_train.shape[1], 1)))
-      model.add(Dense(1, activation="sigmoid"))
-      model.compile(optimizer="adam", loss="binary_crossentropy", metrics=["acc"])
-      history = model.fit(X_train[:, :, np.newaxis], y_train, validation_split=0.2, epochs=100)
-      y_pred = model.predict(X_test[:, :, np.newaxis])
+        return model, y_pred, y_test, history, X_test
+
+      model, y_pred, y_test, history, X_test = RNN()
 
 
       st.success("Success!")
@@ -826,42 +803,43 @@ if st.checkbox("Machine Learning"):
 
       
       # Load model
-      df = train_stock_prices
+      @st.cache(allow_output_mutation=True)
+      def RF_Model():
+        df = get_hist_data(ticker_name, from_date, to_date)
 
-      df = append_TI(df, tech_indicators)
-            
-        
-      df = df.drop(
+        df["Diff"] = df.Close.diff()
+        df["y"] = df["Diff"].apply(lambda x: 1 if x > 0 else 0).shift(-1)
+
+        df = append_TI(df, tech_indicators)
+
+        df = df.drop(
         ["Diff"],
         axis=1,
-      ).dropna()
-      X = df.drop(["y"], axis=1).values
-      y = df["y"].values
-      X_train, X_test, y_train, y_test = train_test_split(
-        X,
-        y,
-        test_size=0.2,
-        shuffle=False,
-      )
+        ).dropna()
+        X = df.drop(["y"], axis=1).values
+        y = df["y"].values
+        X_train, X_test, y_train, y_test = train_test_split(
+          X,
+          y,
+          test_size=0.2,
+          shuffle=False,
+        )
 
-      
-      def Classify_RF(df):
         RF_Model = RandomForestClassifier()
         RF_Model.fit(
           X_train,
           y_train,
         )
 
-        return RF_Model
-
-      
-      def RF_Predictions(RF_Model):
         y_pred = RF_Model.predict(X_test)
-        return y_pred
+
+        return RF_Model, y_pred, y_test, X_test
 
 
-      RF_Model = Classify_RF(df)
-      y_pred = RF_Predictions(RF_Model)
+
+
+      RF_Model, y_pred, y_test, X_test = RF_Model()
+      
       
 
       st.success("Success!")
@@ -915,30 +893,49 @@ if st.checkbox("Machine Learning"):
       # Display predictions and Cost history
 
     if model_name == 'LSTM':
+        
+      st.write('''LSTM is a type of recurrent neural network capable of learning order dependence in sequence prediction problems. 
+                  The main difference with RNNs is that LSTMs are suitable for remembering elements of a sequence that lie far away
+                  from the current index. LSTMs are also able to recognize important patterns and trends, but more importantly they 
+                  can also recognize unimportant trends, dismissing information that may throw off the predictive accuracy of the model.
+                  They are commonly applied in tasks such as Speech Recognition and Machine Translation, and have seen quite some success 
+                  in the stock market field.''')
     
-      df = train_stock_prices
+      @st.cache(allow_output_mutation=True)
+      def LSTM_pipeline():
+        df = get_hist_data(ticker_name, from_date, to_date)
 
-      df = append_TI(df, tech_indicators)
-      
-      df = df.drop(
+        df["Diff"] = df.Close.diff()
+        df["y"] = df["Diff"].apply(lambda x: 1 if x > 0 else 0).shift(-1)
+
+        df = append_TI(df, tech_indicators)
+
+        df = df.drop(
         ["Diff"],
         axis=1,
-      ).dropna()
+        ).dropna()
 
-      X = StandardScaler().fit_transform(df.drop(["y"], axis=1))
-      y = df["y"].values
-      X_train, X_test, y_train, y_test = train_test_split(
-        X,
-        y,
-        test_size=0.2,
-        shuffle=False,
-      )
-      model = Sequential()
-      model.add(LSTM(2, input_shape=(X_train.shape[1], 1)))
-      model.add(Dense(1, activation="sigmoid"))
-      model.compile(optimizer="adam", loss="binary_crossentropy", metrics=["accuracy"])
-      history = model.fit(X_train[:, :, np.newaxis], y_train, validation_split=0.2, epochs=100)
-      y_pred = model.predict(X_test[:, :, np.newaxis])
+        
+        X = StandardScaler().fit_transform(df.drop(["y"], axis=1))
+        y = df["y"].values
+        X_train, X_test, y_train, y_test = train_test_split(
+          X,
+          y,
+          test_size=0.2,
+          shuffle=False,
+        )
+        model = Sequential()
+        model.add(LSTM(2, input_shape=(X_train.shape[1], 1)))
+        model.add(Dense(1, activation="sigmoid"))
+        model.compile(optimizer="adam", loss="binary_crossentropy", metrics=["accuracy"])
+        history = model.fit(X_train[:, :, np.newaxis], y_train, validation_split=0.2, epochs=100)
+        y_pred = model.predict(X_test[:, :, np.newaxis])
+        
+
+        return model, y_pred, y_test, history, X_test
+
+ 
+      model, y_pred, y_test, history, X_test = LSTM_pipeline() 
       
       st.success("Success!")
 
