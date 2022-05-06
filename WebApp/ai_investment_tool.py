@@ -491,33 +491,33 @@ if st.checkbox("Show Tweets"):
     cleanTweets = [preprocess(tweet) for tweet in tweets]
     st.write(cleanTweets)
 
-    if st.checkbox("Build Sentiment Analysis Pipeline..."):
+    #if st.checkbox("Build Sentiment Analysis Pipeline..."):
 
         # Here we can have an input box for the user to select a model
-        model_name = f"cardiffnlp/twitter-roberta-base-sentiment-latest"
+        #model_name = f"cardiffnlp/twitter-roberta-base-sentiment-latest"
 
         # Load models
-        with st.spinner("Loading..."):
+        #with st.spinner("Loading..."):
 
-            classifier = compute_sentiment(model_name)
+         #   classifier = compute_sentiment(model_name)
         
-        st.success("Ready!")
+        #st.success("Ready!")
 
-        st.write("Here are our predictions. NOTE: scores range from 1 = very bad to 5 = very good")
+        #st.write("Here are our predictions. NOTE: scores range from 1 = very bad to 5 = very good")
 
-        results = classifier(cleanTweets)
+        #results = classifier(cleanTweets)
 
-        labels = []
-        scores = []
+        #labels = []
+        #scores = []
 
-        for i in results:
-           label = i['label']
-           score = i['score']
+        #for i in results:
+         #  label = i['label']
+          # score = i['score']
 
-           labels.append(label)
-           scores.append(score)
+           #labels.append(label)
+           #scores.append(score)
 
-        scores_df = pd.DataFrame(results)
+        #scores_df = pd.DataFrame(results)
 
         # labels = []
 
@@ -528,33 +528,33 @@ if st.checkbox("Show Tweets"):
 
         # sentiment_score = ( labels * scores_df['score'] )
 
-        scores_df["sent_score"] = scores
+      #  scores_df["sent_score"] = scores
 
-        scores_df['Label'] = labels
+       # scores_df['Label'] = labels
 
-        scores_df['Tweet'] = cleanTweets
+        #scores_df['Tweet'] = cleanTweets
 
-        scores_df['Date'] = tweets_with_date['date']
+        #scores_df['Date'] = tweets_with_date['date']
 
-        scores_df = tweetDates_to_DateTime(scores_df)
+        #scores_df = tweetDates_to_DateTime(scores_df)
 
-        st.write(scores_df)
+        #st.write(scores_df)
 
-        sentiment_avg = sum(scores_df['sent_score']) / len(scores_df)
+        #sentiment_avg = sum(scores_df['sent_score']) / len(scores_df)
 
 
         ## Derive more efficient way of computing sentiment score ##
-        st.write("Average Sentiment")
-        st.write(sentiment_avg)
+        #st.write("Average Sentiment")
+        #st.write(sentiment_avg)
 
-        if sentiment_avg <= 2:
-            st.write(emojis.encode("NEGATIVE :chart_with_downwards_trend:"))
+        #if sentiment_avg <= 2:
+         #   st.write(emojis.encode("NEGATIVE :chart_with_downwards_trend:"))
 
-        elif (sentiment_avg > 2) and (sentiment_avg <= 3):
-            st.write(emojis.encode("NEUTRAL :neutral_face:"))
+        #elif (sentiment_avg > 2) and (sentiment_avg <= 3):
+         #   st.write(emojis.encode("NEUTRAL :neutral_face:"))
         
-        else:
-            st.write(emojis.encode("POSITIVE :chart_with_upwards_trend:"))
+        #else:
+         #   st.write(emojis.encode("POSITIVE :chart_with_upwards_trend:"))
 
 # input bars to select ticker and num_tweets
 
