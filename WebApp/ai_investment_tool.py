@@ -533,127 +533,127 @@ if st.checkbox("Build Sentiment Analysis Pipeline..."):
           st.write(emojis.encode("POSITIVE :chart_with_upwards_trend:"))
 
 
-######### DATASET ##########
+# ######### DATASET ##########
 
-if st.checkbox("Build and Display Dataset"):
+# if st.checkbox("Build and Display Dataset"):
 
-    if len(ticker_name) < 1:
-        st.warning("Please enter a ticker to analyze")
+#     if len(ticker_name) < 1:
+#         st.warning("Please enter a ticker to analyze")
 
-    st.success('Loading full dataset for ' + str(ticker.info['longName']))
+#     st.success('Loading full dataset for ' + str(ticker.info['longName']))
 
-    with st.spinner("Loading..."):
-        # fetches the data: Open, Close, High, Low and Volume
-        companyDataset = get_hist_data(ticker_name, start_date, end_date, include_period=True)
+#     with st.spinner("Loading..."):
+#         # fetches the data: Open, Close, High, Low and Volume
+#         companyDataset = get_hist_data(ticker_name, start_date, end_date, include_period=True)
 
-        date_df2 = companyDataset.reset_index()
-        firstDay2 = date_df2['Date'][0].date()
-        lastDay2 = date_df2['Date'][len(date_df2['Date'])-1].date()
+#         date_df2 = companyDataset.reset_index()
+#         firstDay2 = date_df2['Date'][0].date()
+#         lastDay2 = date_df2['Date'][len(date_df2['Date'])-1].date()
 
-        start = time.time()
-        num_tweets2 = 2
+#         start = time.time()
+#         num_tweets2 = 2
 
-        rangeDays2 = (lastDay2 - firstDay2).days
-        st.write("You selected ", num_tweets2, " tweets per day, for ", rangeDays2, " days.")
+#         rangeDays2 = (lastDay2 - firstDay2).days
+#         st.write("You selected ", num_tweets2, " tweets per day, for ", rangeDays2, " days.")
 
-        tweets_train = pd.DataFrame()
-        tweets_train_TEMP = pd.DataFrame()
+#         tweets_train = pd.DataFrame()
+#         tweets_train_TEMP = pd.DataFrame()
 
-        for d in range(rangeDays2-1):
+#         for d in range(rangeDays2-1):
 
-            st.write("DAY: ", firstDay2)
+#             st.write("DAY: ", firstDay2)
 
-            dailyEnd2 = firstDay2 + datetime.timedelta(days=1)
+#             dailyEnd2 = firstDay2 + datetime.timedelta(days=1)
 
-            tweets_with_date_day2 = get_tweets(ticker_name, num_tweets2, firstDay2.strftime("%Y-%m-%d %H:%M:%S"), str(dailyEnd2))
+#             tweets_with_date_day2 = get_tweets(ticker_name, num_tweets2, firstDay2.strftime("%Y-%m-%d %H:%M:%S"), str(dailyEnd2))
 
-            tweets_day2 = tweetdf_to_list(tweets_with_date_day2)
+#             tweets_day2 = tweetdf_to_list(tweets_with_date_day2)
             
-            if len(tweets_day2) > 1:
+#             if len(tweets_day2) > 1:
 
-                cleanTweets_day2 = [preprocess(tweet) for tweet in tweets_day2]
+#                 cleanTweets_day2 = [preprocess(tweet) for tweet in tweets_day2]
 
-                tweets_train_TEMP['Date'] = tweets_with_date_day2['date']
+#                 tweets_train_TEMP['Date'] = tweets_with_date_day2['date']
 
-                tweets_train_TEMP['Tweet'] = pd.Series(cleanTweets_day2)
+#                 tweets_train_TEMP['Tweet'] = pd.Series(cleanTweets_day2)
 
-                tweets_train_TEMP = tweetDates_to_DateTime(tweets_train_TEMP)
+#                 tweets_train_TEMP = tweetDates_to_DateTime(tweets_train_TEMP)
 
-                tweets_train = tweets_train.append(tweets_train_TEMP, ignore_index = True)
+#                 tweets_train = tweets_train.append(tweets_train_TEMP, ignore_index = True)
                 
-            firstDay2 += datetime.timedelta(days=1)
+#             firstDay2 += datetime.timedelta(days=1)
 
-        st.write(tweets_train['Tweet'].tolist())
+#         st.write(tweets_train['Tweet'].tolist())
 
-    model_name = f"cardiffnlp/twitter-roberta-base-sentiment-latest"
+#     model_name = f"cardiffnlp/twitter-roberta-base-sentiment-latest"
 
-    # Load models
-    with st.spinner("Loading..."):
+#     # Load models
+#     with st.spinner("Loading..."):
 
-        start1 = time.time()
+#         start1 = time.time()
 
-        classifier = compute_sentiment(model_name)
+#         classifier = compute_sentiment(model_name)
     
-        st.success("Classifier ready! Building dataset...")
+#         st.success("Classifier ready! Building dataset...")
 
-        results_train = classifier(tweets_train['Tweet'].tolist())
+#         results_train = classifier(tweets_train['Tweet'].tolist())
 
-        labels_train = []
-        scores_train = []
+#         labels_train = []
+#         scores_train = []
 
-        for i in results:
-            label = i['label']
-            score = i['score']
+#         for i in results:
+#             label = i['label']
+#             score = i['score']
 
-            if label == "Neutral": 
-                labels_train.append(label+" 0")
-            elif label == "Positive":
-                labels_train.append(label+" 1")
-            else:
-                labels_train.append(label+"-1")     
+#             if label == "Neutral": 
+#                 labels_train.append(label+" 0")
+#             elif label == "Positive":
+#                 labels_train.append(label+" 1")
+#             else:
+#                 labels_train.append(label+"-1")     
             
-            scores_train.append(score)
+#             scores_train.append(score)
 
-        results_train = pd.DataFrame(results_train)
+#         results_train = pd.DataFrame(results_train)
 
-        sent_scores_train = []
+#         sent_scores_train = []
 
-        for i in range(len(labels_train)):
-            sent_score = float(labels[i][-2:]) * scores[i]
-            sent_scores_train.append(sent_score)
+#         for i in range(len(labels_train)):
+#             sent_score = float(labels[i][-2:]) * scores[i]
+#             sent_scores_train.append(sent_score)
 
-        scores_df_train = pd.concat([tweets_train, results_train], axis=1)
+#         scores_df_train = pd.concat([tweets_train, results_train], axis=1)
 
-        scores_df_train["sent_score"] = sent_scores_train
+#         scores_df_train["sent_score"] = sent_scores_train
 
-        st.write(scores_df_train)
+#         st.write(scores_df_train)
 
-        #Group by date and sum sent scores
-        daily_sent_df = scores_df.groupby( [ pd.to_datetime( scores_df_train['Date'] ).dt.date ] )['sent_score'].sum()
+#         #Group by date and sum sent scores
+#         daily_sent_df = scores_df.groupby( [ pd.to_datetime( scores_df_train['Date'] ).dt.date ] )['sent_score'].sum()
 
-        daily_sent_df = pd.DataFrame(daily_sent_df)
+#         daily_sent_df = pd.DataFrame(daily_sent_df)
 
-        #make date a column so we can edit it
-        companyDataset = companyDataset.reset_index()
+#         #make date a column so we can edit it
+#         companyDataset = companyDataset.reset_index()
 
-        #change date column (timestamp) to date
-        companyDataset = convert_ISO8601(companyDataset)
+#         #change date column (timestamp) to date
+#         companyDataset = convert_ISO8601(companyDataset)
 
-        #set date back to index
-        companyDataset = companyDataset.set_index('Date')
+#         #set date back to index
+#         companyDataset = companyDataset.set_index('Date')
 
-        #join historical data with daily sent avg data on index (date)
-        dataset = companyDataset.join(daily_sent_df)
+#         #join historical data with daily sent avg data on index (date)
+#         dataset = companyDataset.join(daily_sent_df)
 
-        end1 = time.time()
+#         end1 = time.time()
 
-    st.write("It took ", round(end1 - start1, 2), " seconds to load models and build dataset of dimension ", dataset.shape )
-    st.write(dataset)
+#     st.write("It took ", round(end1 - start1, 2), " seconds to load models and build dataset of dimension ", dataset.shape )
+#     st.write(dataset)
 
-    # Plot correlation matrix
+#     # Plot correlation matrix
 
-    st.subheader("Correlation Matrix")
-    correlation_matrix(dataset)
+#     st.subheader("Correlation Matrix")
+#     correlation_matrix(dataset)
 
 ######### MODELS ##########
 
