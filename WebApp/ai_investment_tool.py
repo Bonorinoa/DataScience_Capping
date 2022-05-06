@@ -469,98 +469,68 @@ if st.checkbox('Show charts for Start date: %s\n\nEnd date: %s' % (start_date, e
 
 # input bars to select ticker and num_tweets
 
-if st.checkbox("Show tweets (BETA)"):
+if st.checkbox("Build Sentiment Analysis Pipeline..."):
 
-    num_tweets = st.slider("Number of tweets to get per day for given range", 2, 100)
-    rangeDays = (end_date - start_date).days
-    st.write("You selected ", num_tweets, " tweets per day, for ", rangeDays, " days.")
+      rangeDays = (end_date - start_date).days
 
-    tweets_df = pd.DataFrame()
-    tweets_df_TEMP = pd.DataFrame()
+      text = st.text_input('Enter text to analyze')
 
-    for d in range(rangeDays-1):
+      # Here we can have an input box for the user to select a model
+      model_name = f"cardiffnlp/twitter-roberta-base-sentiment-latest"
 
-        dailyEnd = start_date + datetime.timedelta(days=1)
+      # Load models
+      with st.spinner("Loading..."):
 
-        tweets_with_date_day = get_tweets(ticker_name, num_tweets, start_date.strftime("%Y-%m-%d %H:%M:%S"), str(dailyEnd))
-        tweets_day = tweetdf_to_list(tweets_with_date_day)
-        cleanTweets_day = [preprocess(tweet) for tweet in tweets_day]
-        
-        tweets_df_TEMP['Date'] = tweets_with_date_day['date']
-        
-        tweets_df_TEMP['Tweet'] = pd.Series(cleanTweets_day)
-        
-        if type(tweets_df_TEMP['Date']) == str:
-            tweets_df_TEMP = tweetDates_to_DateTime(tweets_df_TEMP)
+          classifier = compute_sentiment(model_name)
+      
+      st.success("Ready!")
 
-            tweets_df = tweets_df.append(tweets_df_TEMP, ignore_index = True)
-        
-        start_date += datetime.timedelta(days=1)
+      st.write("Here are our predictions. NOTE: Daily sentimet is computed as a weighted sum of the number of positive and negative tweets." +
+      "If the sum is positive then daily sentiment is considered overall positive, negative otherwise.")
 
-    if len(tweets_df) < 1:
-        st.warning("No tweets found. Try selecting a bigger range of dates.")
-    else:
-        st.write(tweets_df)
-        st.write(tweets_df['Tweet'].tolist())
+      results = classifier(text)
 
-    if st.checkbox("Build Sentiment Analysis Pipeline..."):
+      labels = []
+      scores = []
 
-        # Here we can have an input box for the user to select a model
-        model_name = f"cardiffnlp/twitter-roberta-base-sentiment-latest"
+      for i in results:
+          label = i['label']
+          score = i['score']
 
-        # Load models
-        with st.spinner("Loading..."):
+          if label == "Neutral": 
+              labels.append(label+" 0")
+          elif label == "Positive":
+              labels.append(label+" 1")
+          else:
+              labels.append(label+"-1")     
+          
+          scores.append(score)
 
-            classifier = compute_sentiment(model_name)
-        
-        st.success("Ready!")
+      results_df = pd.DataFrame(results)
 
-        st.write("Here are our predictions. NOTE: Daily sentimet is computed as a weighted sum of the number of positive and negative tweets." +
-        "If the sum is positive then daily sentiment is considered overall positive, negative otherwise.")
+      sent_scores = []
 
-        results = classifier(tweets_df['Tweet'].tolist())
+      for i in range(len(labels)):
+          sent_score = float(labels[i][-2:]) * scores[i]
+          sent_scores.append(sent_score)
 
-        labels = []
-        scores = []
+      scores_df = pd.concat([pd.Series(text), results_df], axis=1)
 
-        for i in results:
-           label = i['label']
-           score = i['score']
+      scores_df["sent_score"] = sent_scores
 
-           if label == "Neutral": 
-                labels.append(label+" 0")
-           elif label == "Positive":
-                labels.append(label+" 1")
-           else:
-               labels.append(label+"-1")     
-            
-           scores.append(score)
+      st.write(scores_df)
 
-        results_df = pd.DataFrame(results)
+      daily_avg_sentiment = ( sum(scores_df['sent_score']) / rangeDays )
 
-        sent_scores = []
+      ## Derive more efficient way of computing sentiment score ##
+      st.write("Daily Average Sentiment")
+      st.write(daily_avg_sentiment)
 
-        for i in range(len(labels)):
-            sent_score = float(labels[i][-2:]) * scores[i]
-            sent_scores.append(sent_score)
+      if daily_avg_sentiment < 0:
+          st.write(emojis.encode("NEGATIVE :chart_with_downwards_trend:"))
 
-        scores_df = pd.concat([tweets_df, results_df], axis=1)
-
-        scores_df["sent_score"] = sent_scores
-
-        st.write(scores_df)
-
-        daily_avg_sentiment = ( sum(scores_df['sent_score']) / rangeDays )
-
-        ## Derive more efficient way of computing sentiment score ##
-        st.write("Daily Average Sentiment")
-        st.write(daily_avg_sentiment)
-
-        if daily_avg_sentiment < 0:
-            st.write(emojis.encode("NEGATIVE :chart_with_downwards_trend:"))
-
-        else:
-            st.write(emojis.encode("POSITIVE :chart_with_upwards_trend:"))
+      else:
+          st.write(emojis.encode("POSITIVE :chart_with_upwards_trend:"))
 
 
 ######### DATASET ##########
