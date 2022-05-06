@@ -469,68 +469,68 @@ if st.checkbox('Show charts for Start date: %s\n\nEnd date: %s' % (start_date, e
 
 # input bars to select ticker and num_tweets
 
-if st.checkbox("Build Sentiment Analysis Pipeline..."):
+# if st.checkbox("Build Sentiment Analysis Pipeline..."):
 
-      rangeDays = (end_date - start_date).days
+#       rangeDays = (end_date - start_date).days
 
-      text = st.text_input('Enter text to analyze')
+#       text = st.text_input('Enter text to analyze')
 
-      # Here we can have an input box for the user to select a model
-      model_name = f"cardiffnlp/twitter-roberta-base-sentiment-latest"
+#       # Here we can have an input box for the user to select a model
+#       model_name = f"cardiffnlp/twitter-roberta-base-sentiment-latest"
 
-      # Load models
-      with st.spinner("Loading..."):
+#       # Load models
+#       with st.spinner("Loading..."):
 
-          classifier = compute_sentiment(model_name)
+#           classifier = compute_sentiment(model_name)
       
-      st.success("Ready!")
+#       st.success("Ready!")
 
-      st.write("Here are our predictions. NOTE: Daily sentimet is computed as a weighted sum of the number of positive and negative tweets." +
-      "If the sum is positive then daily sentiment is considered overall positive, negative otherwise.")
+#       st.write("Here are our predictions. NOTE: Daily sentimet is computed as a weighted sum of the number of positive and negative tweets." +
+#       "If the sum is positive then daily sentiment is considered overall positive, negative otherwise.")
 
-      results = classifier(text)
+#       results = classifier(text)
 
-      labels = []
-      scores = []
+#       labels = []
+#       scores = []
 
-      for i in results:
-          label = i['label']
-          score = i['score']
+#       for i in results:
+#           label = i['label']
+#           score = i['score']
 
-          if label == "Neutral": 
-              labels.append(label+" 0")
-          elif label == "Positive":
-              labels.append(label+" 1")
-          else:
-              labels.append(label+"-1")     
+#           if label == "Neutral": 
+#               labels.append(label+" 0")
+#           elif label == "Positive":
+#               labels.append(label+" 1")
+#           else:
+#               labels.append(label+"-1")     
           
-          scores.append(score)
+#           scores.append(score)
 
-      results_df = pd.DataFrame(results)
+#       results_df = pd.DataFrame(results)
 
-      sent_scores = []
+#       sent_scores = []
 
-      for i in range(len(labels)):
-          sent_score = float(labels[i][-2:]) * scores[i]
-          sent_scores.append(sent_score)
+#       for i in range(len(labels)):
+#           sent_score = float(labels[i][-2:]) * scores[i]
+#           sent_scores.append(sent_score)
 
-      scores_df = pd.concat([pd.Series(text), results_df], axis=1)
+#       scores_df = pd.concat([pd.Series(text), results_df], axis=1)
 
-      scores_df["sent_score"] = sent_scores
+#       scores_df["sent_score"] = sent_scores
 
-      st.write(scores_df)
+#       st.write(scores_df)
 
-      daily_avg_sentiment = ( sum(scores_df['sent_score']) / rangeDays )
+#       daily_avg_sentiment = ( sum(scores_df['sent_score']) / rangeDays )
 
-      ## Derive more efficient way of computing sentiment score ##
-      st.write("Daily Average Sentiment")
-      st.write(daily_avg_sentiment)
+#       ## Derive more efficient way of computing sentiment score ##
+#       st.write("Daily Average Sentiment")
+#       st.write(daily_avg_sentiment)
 
-      if daily_avg_sentiment < 0:
-          st.write(emojis.encode("NEGATIVE :chart_with_downwards_trend:"))
+#       if daily_avg_sentiment < 0:
+#           st.write(emojis.encode("NEGATIVE :chart_with_downwards_trend:"))
 
-      else:
-          st.write(emojis.encode("POSITIVE :chart_with_upwards_trend:"))
+#       else:
+#           st.write(emojis.encode("POSITIVE :chart_with_upwards_trend:"))
 
 
 # ######### DATASET ##########
