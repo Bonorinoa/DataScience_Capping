@@ -484,7 +484,7 @@ if st.checkbox('Show charts for Start date: %s\n\nEnd date: %s' % (start_date, e
         make_ohlc(ts_stock_prices, ticker_name)
   
 ######## TWEETS ########
-  if st.checkbox("Show Tweets"):
+if st.checkbox("Show Tweets"):
     num_tweets = st.slider("Number of tweets", 1, 100)
     tweets_with_date = get_tweets(ticker_name, num_tweets)
     tweets = tweetdf_to_list(tweets_with_date)
