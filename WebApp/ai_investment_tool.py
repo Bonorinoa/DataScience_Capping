@@ -380,7 +380,7 @@ description.write("""With the ever increasing capability of Machine Learning and
 st.sidebar.header("Data Science Capping \n Financial Engineering")
 
 ######### MAIN BODY ##########
-ticker_name = st.text_input("Enter ticker to analyze")
+ticker_name = st.text_input("Enter ticker to analyze (For this DEMO please enter the ticker symbol all capitalized as it appears in the NYSE)")
 
 ticker = get_ticker(ticker_name)
 
