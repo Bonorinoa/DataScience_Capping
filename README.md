@@ -2,6 +2,8 @@
 This repository started with the goal of documenting the progress of the Financial WebApp we are developing to fulfill the requirements of Data Science Bachelor of Arts. 
 All work is unique
 
+https://share.streamlit.io/bonorinoa/datascience_capping/main/WebApp/ai_investment_tool.py
+
 # FinML
 After observing promising results this repository has since become the place where the app lives. 
 We intend to continue developing with the goal of offering a high quality product that could empower retail investors.
